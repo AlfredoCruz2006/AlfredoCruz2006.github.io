@@ -2,99 +2,136 @@
 <html>
 
 <head>
-	<meta charset="utf-8">
-	<title>Bouncing Box</title>
-	<script src="jquery.min.js"></script>
-	<style>
-		.box {
-			width: 70px;
-			height: 70px;
-			background-color: teal;
-			font-size: 300%;
-			text-align: center;
-			user-select: none;
-			display: block;
-			position: absolute;
-			top: 100px;
-			/* Change me! */
-			left: 0px;
-		}
+  <meta charset="utf-8">
+  <title>Bouncing Box Game</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    .box {
+      width: 70px;
+      height: 70px;
+      background-image: url('https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/1200px-Real_Madrid_CF.svg.png');
+      background-size: cover;
+      background-position: center;
+      font-size: 100%;
+      text-align: center;
+      user-select: none;
+      display: block;
+      position: absolute;
+      top: 100px;
+      left: 0px;
+    }
 
-		.board {
-			height: 100vh;
-		}
-	</style>
-	<!-- 	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> -->
+    .board {
+      height: 150vh;
+      position: relative;
+      background-image: url('https://pbs.twimg.com/media/Fvl3RFAXoAE6haS.jpg:large');
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+    }
 
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
 </head>
 
 <body class="board">
-	<!-- HTML for the box -->
-	<div class="box">?</div>
+  <div class="box">?</div>
 
-	<script>
-		(function () {
-			'use strict'
-			/* global jQuery */
+  <script>
+    (function () {
+      'use strict'
 
-			//////////////////////////////////////////////////////////////////
-			/////////////////// SETUP DO NOT DELETE //////////////////////////
-			//////////////////////////////////////////////////////////////////
+      var box = jQuery('.box');
+      var board = jQuery('.board');
+      var boardWidth = board.width();
+      var boardHeight = jQuery(window).height();
+      var positionX = 0;
+      var positionY = 100;
+      var speed = 10;
+      var speedY = 5;
+      var points = 0;
+      var misClicks = 0;
 
-			var box = jQuery('.box');	// reference to the HTML .box element
-			var board = jQuery('.board');	// reference to the HTML .board element
-			var boardWidth = board.width();	// the maximum X-Coordinate of the screen
+      var interval = setInterval(update, 50);
 
-			// Every 50 milliseconds, call the update Function (see below)
-			setInterval(update, 50);
+      function moveBoxTo(newPositionX, newPositionY) {
+        box.css("left", newPositionX);
+        box.css("top", newPositionY);
+      }
 
-			// Every time the box is clicked, call the handleBoxClick Function (see below)
-			box.on('click', handleBoxClick);
+      function changeBoxText(newText) {
+        box.text(newText);
+      }
 
-			// moves the Box to a new position on the screen along the X-Axis
-			function moveBoxTo(newPositionX) {
-				box.css("left", newPositionX);
-			}
+      function getRandomColor() {
+        var r = Math.floor(Math.random() * 256);
+        var g = Math.floor(Math.random() * 256);
+        var b = Math.floor(Math.random() * 256);
+        return "rgb(" + r + ", " + g + ", " + b + ")";
+      }
 
-			// changes the text displayed on the Box
-			function changeBoxText(newText) {
-				box.text(newText);
-			}
+      function update() {
+        positionX += speed;
+        positionY += speedY;
 
-			//////////////////////////////////////////////////////////////////
-			/////////////////// YOUR CODE BELOW HERE /////////////////////////
-			//////////////////////////////////////////////////////////////////
+        moveBoxTo(positionX, positionY);
 
-			// TODO 2 - Variable declarations 
+        // Horizontal boundary checks
+        if (positionX >= boardWidth - 70 || positionX <= 0) {
+          speed *= -1; // Reverse horizontal speed
+          points++; // Increase points when bouncing off walls
+          changeBoxText(points);
+        }
 
+        // Vertical boundary checks
+        if (positionY >= boardHeight - 70 || positionY <= 0) {
+          speedY *= -1; // Reverse vertical speed
+        }
+      }
 
+      function handleBoxClick() {
+        // If clicked outside the box, count it as a mis-click
+        if (event.target !== box[0]) {
+          misClicks++;
+          if (misClicks >= 10) {
+            endGame();
+            alert("Game Over! Too many mis-clicks.");
+          }
+        }
 
-			/* 
-			This Function will be called 20 times/second. Each time it is called,
-			it should move the Box to a new location. If the box drifts off the screen
-			turn it around! 
-			*/
-			function update() {
+        // Randomize box position on each click
+        positionX = Math.random() * (boardWidth - 70);
+        positionY = Math.random() * (boardHeight - 70);
 
+        points++;
 
-			};
+        // Increase speed more drastically every 3 clicks
+        if (points % 3 === 0) {
+          speed += 5; // Increase the speed significantly
+        }
 
-			/* 
-			This Function will be called each time the box is clicked. Each time it is called,
-			it should increase the points total, increase the speed, and move the box to
-			the left side of the screen.
-			*/
-			function handleBoxClick() {
+        // Set new speed using the formula
+        speed = 3 * points + 10;
 
+        // Change color on each click
+        var newColor = getRandomColor();
+        box.css("background-color", newColor);
 
-			};
+        changeBoxText(points);
+      }
 
+      // End the game by clearing the interval
+      function endGame() {
+        clearInterval(interval); // Stop the game
+      }
 
-
-
-
-		})();
-	</script>
+      // Listen for box clicks
+      box.on('click', handleBoxClick);
+    })();
+  </script>
 </body>
 
 </html>
